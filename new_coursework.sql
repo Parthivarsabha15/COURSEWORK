@@ -3,7 +3,6 @@
 CREATE TABLE Attendance(
     attendance_id        VARCHAR2(10) NOT NULL,
     member_id            VARCHAR2(10) NOT NULL,
-    staff_id             VARCHAR2(10) NOT NULL,
     check_in             TIMESTAMP WITH LOCAL TIME ZONE NOT NULL,
     check_out            TIMESTAMP WITH LOCAL TIME ZONE,
     PRIMARY KEY(attendance_id)
@@ -22,8 +21,7 @@ CREATE TABLE Booking_system(
 
 CREATE TABLE Fitness_class(
     class_id       VARCHAR2(10) NOT NULL,
-    name           VARCHAR2(50) NOT NULL,
-    type           VARCHAR2(20) NOT NULL,
+    NAME          VARCHAR2(20) NOT NULL,
     schedule       TIMESTAMP NOT NULL,
     max_capacity   NUMBER(3) NOT NULL,
     staff_id       VARCHAR2(10) NOT NULL
@@ -41,22 +39,34 @@ CREATE TABLE MEMBER(
     phone_number      VARCHAR2(15) NOT NULL,
     email             VARCHAR2(50)  NOT NULL,
     emergency_contact VARCHAR2(15),
+    plan_start_date   DATE NOT NULL,
+    plan_status       VARCHAR2(10) NOT NULL,
     PRIMARY KEY(MEMBER_ID)
 );
 
-CREATE TABLE Membership(
+-- CREATE TABLE Membership(
+--     membership_id    VARCHAR2(10)  NOT NULL,
+--     start_date       DATE NOT NULL,
+--     end_date         DATE NOT NULL,
+--     duration         VARCHAR2(10)  NOT NULL,
+--     status           VARCHAR2(15) NOT NULL,
+--     plan             VARCHAR2(20) NOT NULL,
+--     PRIMARY KEY(MEMBERSHIP_ID)
+-- );
+
+CREATE TABLE Membership_plan(
     membership_id    VARCHAR2(10)  NOT NULL,
-    start_date       DATE NOT NULL,
-    end_date         DATE NOT NULL,
+    plan_name         VARCHAR2(20) NOT NULL,
     duration         VARCHAR2(10)  NOT NULL,
-    status           VARCHAR2(15) NOT NULL,
-    plan             VARCHAR2(20) NOT NULL,
+    amount          NUMBER(10,2) NOT NULL,
     PRIMARY KEY(MEMBERSHIP_ID)
-);
+ );
 
 CREATE TABLE Billing(
     billing_id       VARCHAR2(10) NOT NULL,
     member_id        VARCHAR2(10) NOT NULL,
+    booking_id       VARCHAR2(10) NOT NULL,
+    service_type     VARCHAR2(30) NOT NULL,
     amount           NUMBER(10,2) NOT NULL,
     payment_date     DATE NOT NULL,
     payment_method   VARCHAR2(20) NOT NULL,
@@ -88,11 +98,23 @@ CREATE TABLE Staff(
     PRIMARY KEY(STAFF_ID)
 );
 
+-- CREATE TABLE Workout_plan(
+--     plan_id                   VARCHAR2(10) NOT NULL,
+--     member_id                 VARCHAR2(10)  NOT NULL,
+--     exercise_details          VARCHAR2(250),
+--     progress_notes            VARCHAR2(250),
+--     primary key(plan_id)
+-- );
+
 CREATE TABLE Workout_plan(
-    workout_plan_id              VARCHAR2(10) NOT NULL,
-    member_id                    VARCHAR2(10)  NOT NULL,
-    exercise_details            VARCHAR2(250),
-    progress_notes               VARCHAR2(250),
+    workout_plan_id           VARCHAR2(10) NOT NULL,
+    member_id                 VARCHAR2(10)  NOT NULL,
+    trainer_id                VARCHAR2(10)  NOT NULL,
+    plan_name                 VARCHAR2(30)  NOT NULL,
+    goal                      VARCHAR2(30)  NOT NULL,
+    exercise_details          VARCHAR2(250),
+    plan_status               VARCHAR2(10)  NOT NULL,
+    progress_notes            VARCHAR2(250),
     primary key(workout_plan_id)
 );
 

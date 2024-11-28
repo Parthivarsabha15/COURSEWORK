@@ -1,38 +1,42 @@
-Here are the SQL queries addressing each of the requirements. Adjust the date ranges as needed for your database. These queries assume the table structure provided in your files:
+--1. List of all fitness classes with their schedules and instructor names
 
-1. List of all fitness classes with their schedules and instructor names
-sql
-Copy code
 SELECT 
+    FC.class_id,
     FC.name AS class_name, 
     FC.schedule, 
-    CONCAT(S.fname, ' ', S.lname) AS instructor_name
+    S.fname || ' ' || S.lname AS instructor_name
 FROM 
     Fitness_class FC
 JOIN 
-    Staff S ON FC.staff_id = S.staff_id;
-2. Members who booked a yoga class, including booking status
-sql
-Copy code
+    Staff S 
+    ON FC.staff_id = S.staff_id;
+
+--2. Members who booked a yoga class, including booking status
 SELECT 
+    M.member_ID,
     M.fname || ' ' || M.lname AS member_name, 
+    fc.name, fc.type,
     B.booking_status
 FROM 
     Booking_system B
 JOIN 
-    Fitness_class FC ON B.class_id = FC.class_id
+    Fitness_class FC 
+    ON B.class_id = FC.class_id
 JOIN 
-    Member M ON B.member_id = M.member_id
+    Member M 
+    ON B.member_id = M.member_id
 WHERE 
-    LOWER(FC.type) = 'yoga';
-3. Total revenue from memberships, personal training, and class bookings for a given month
-sql
-Copy code
+    FC.type = 'Yoga';
+
+------------------------------
+
+--3. Total revenue from memberships, personal training, and class bookings for a given month
+
 SELECT 
     EXTRACT(MONTH FROM payment_date) AS month,
-    SUM(CASE WHEN payment_method = 'Membership' THEN amount ELSE 0 END) AS membership_revenue,
-    SUM(CASE WHEN payment_method = 'Personal Training' THEN amount ELSE 0 END) AS training_revenue,
-    SUM(CASE WHEN payment_method = 'Class Booking' THEN amount ELSE 0 END) AS booking_revenue,
+    SUM(CASE WHEN service_type = 'Membership' THEN amount ELSE 0 END) AS membership_revenue,
+    SUM(CASE WHEN service_type  = 'Personal Training' THEN amount ELSE 0 END) AS training_revenue,
+    SUM(CASE WHEN service_type = 'Class Booking' THEN amount ELSE 0 END) AS booking_revenue,
     SUM(amount) AS total_revenue
 FROM 
     Billing
@@ -41,11 +45,11 @@ WHERE
     AND EXTRACT(YEAR FROM payment_date) = :desired_year
 GROUP BY 
     EXTRACT(MONTH FROM payment_date);
-4. Top 5 trainers with the most personal training sessions
-sql
-Copy code
+
+--------------------------------------------
+--4. List the top 5 trainers who have conducted the most personal training sessions.
 SELECT 
-    CONCAT(S.fname, ' ', S.lname) AS trainer_name, 
+    S.fname || ' ' || S.lname AS trainer_name, 
     COUNT(PTS.session_id) AS session_count
 FROM 
     Personal_Training_session PTS
@@ -56,9 +60,9 @@ GROUP BY
 ORDER BY 
     session_count DESC
 FETCH FIRST 5 ROWS ONLY;
-5. Members with expired memberships who attended in the past 30 days
-sql
-Copy code
+
+-------------------------------------------------
+--5. List all members whose membership has expired but who have attended the gym in the past 30 days.
 SELECT 
     M.fname || ' ' || M.lname AS member_name, 
     A.check_in
@@ -71,9 +75,8 @@ JOIN
 WHERE 
     MS.end_date < SYSDATE
     AND A.check_in >= SYSDATE - 30;
-6. Members with most active workout plans and at least three exercises
-sql
-Copy code
+
+--6. Find the members who have the most active workout plans with at least three different exercises in their current routine. (2 marks)
 SELECT 
     M.fname || ' ' || M.lname AS member_name, 
     COUNT(WP.workout_plan_id) AS active_workout_plans
@@ -87,9 +90,16 @@ GROUP BY
     M.fname, M.lname
 ORDER BY 
     active_workout_plans DESC;
-7. Total usage and revenue loss from discount codes in the last year
-sql
-Copy code
+
+    --------------------------------------------
+SELECT wp.member_id, COUNT(wp.plan_id) AS active_workout_plan_count
+FROM workout_plan wp
+WHERE wp.status ='active'
+AND LENGTH(wp.exercise_details) - LENGTH(REPLACE(wp.exercise_details, ',', ' ')) + 1, >=3 
+GROUP BY wp.member_id
+ORDER BY active_workout_plan_count DESC
+
+--7. Calculate the total usage of discount codes and how much revenue was lost due to discounts applied in the last year. (2 marks)
 SELECT 
     DC.description, 
     COUNT(DC.Discount_Code_ID) AS total_usage, 
@@ -102,9 +112,11 @@ WHERE
     DC.expiry_date >= ADD_MONTHS(SYSDATE, -12)
 GROUP BY 
     DC.description;
-8. Member progress in the last month, including class attendance
-sql
-Copy code
+
+--8. Identify the progress of members in the last month at the gym, including the number of fitness classes they attended. 
+--The result should display the member's name, the specific dates they attended, 
+--and the total number of classes attended during that period. (3 marks)
+
 SELECT 
     M.fname || ' ' || M.lname AS member_name, 
     A.check_in AS attendance_date, 
